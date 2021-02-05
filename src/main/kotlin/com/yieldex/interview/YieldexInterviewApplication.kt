@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @SpringBootApplication
 @EnableMongoRepositories
 class YieldexInterviewApplication
-
 fun main(args: Array<String>) {
 	runApplication<YieldexInterviewApplication>(*args)
 }

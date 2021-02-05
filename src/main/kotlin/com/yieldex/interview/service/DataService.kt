@@ -1,50 +1,47 @@
 package com.yieldex.interview.service
 
-import com.yieldex.interview.mongo.model.Merchant
-import com.yieldex.interview.mongo.model.Master
-import com.yieldex.interview.mongo.model.Transaction
-import com.yieldex.interview.mongo.model.User
-import com.yieldex.interview.mongo.repository.MerchantRepository
-import com.yieldex.interview.mongo.repository.MasterRepository
-import com.yieldex.interview.mongo.repository.TransactionRepository
-import com.yieldex.interview.mongo.repository.UserRepository
+import com.yieldex.interview.data.model.postgres.Master
+import com.yieldex.interview.data.model.postgres.Merchant
+import com.yieldex.interview.data.model.postgres.Transaction
+import com.yieldex.interview.data.model.postgres.User
+import com.yieldex.interview.data.repository.MasterRepository
+import com.yieldex.interview.data.repository.MerchantRepository
+import com.yieldex.interview.data.repository.TransactionRepository
+import com.yieldex.interview.data.repository.UserRepository
 import lombok.extern.slf4j.Slf4j
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.*
-import kotlin.collections.HashSet
 
 @Slf4j
 @Service
-class DataService(
-        @Autowired private val masterRepo: MasterRepository,
-        @Autowired private val userRepo: UserRepository,
-        @Autowired private val merchantRepo: MerchantRepository,
-        @Autowired private val transactionRepo: TransactionRepository,
-) {
+class DataService{
+
+    @Autowired lateinit var masterRepo: MasterRepository
+    @Autowired lateinit var userRepo: UserRepository
+    @Autowired lateinit var merchantRepo: MerchantRepository
+    @Autowired lateinit var transactionRepo: TransactionRepository
 
     val logger: Logger = LoggerFactory.getLogger("DataService")
 
-    fun normalize() {
-        val data: List<Master> = masterRepo.findAll()
+    fun normalizeUsersAndMerchants() {
+        val data: Iterable<Master> = masterRepo.findAll()
 
-        logger.info("in normalize Data, data count: " + data.size)
+        logger.info("data count: " + data.count())
 
         val users: HashSet<User> = HashSet()
         val merchants: HashSet<Merchant> = HashSet()
-        val transactions: HashSet<Transaction> = HashSet()
         data.let { it ->
 
             it.forEach {
                 if(!users.any{ user -> user.email == it.email }) {
                     val user: User = User(
-                            userId = UUID.randomUUID(),
                             firstName = it.firstName,
                             lastName = it.lastName,
                             email = it.email,
-                            password = it.password
+                            password = it.password,
+                            id = -1
                     )
                     users.add(user)
                 }
@@ -52,7 +49,6 @@ class DataService(
 
                 if(!merchants.any{ merchant -> merchant.name == it.merchant }) {
                     val merchant: Merchant = Merchant(
-                            merchantId = UUID.randomUUID(),
                             name = it.merchant,
                             latitude = it.latitude,
                             longitude = it.longitude
@@ -60,30 +56,51 @@ class DataService(
                     merchants.add(merchant)
                 }
             }
-            userRepo.insert(users);
-            merchantRepo.insert(merchants)
+            userRepo.saveAll(users)
+            merchantRepo.saveAll(merchants)
 
             logger.info("Users inserted: " + users.size)
             logger.info("Merchants inserted: " + merchants.size)
 
+        }
+    }
+
+    fun normalizeTransactions() {
+        val data: Iterable<Master> = masterRepo.findAll()
+        val users: Iterable<User> = userRepo.findAll()
+        val merchants: Iterable<Merchant> = merchantRepo.findAll()
+
+        logger.info("data count: " + data.count())
+
+        val transactions: HashSet<Transaction> = HashSet()
+        data.let { it ->
+
             it.forEach {
                 if(!transactions.any{ transaction -> transaction.timestamp == it.createdAt }) {
-                    val userId = users.first { user -> user.email == it.email }.userId
-                    val merchantId = merchants.first { merchant -> merchant.name == it.merchant }.merchantId
-                    val transaction: Transaction = Transaction(
-                            merchantId = merchantId,
-                            userId = userId,
-                            amountInCents = it.amountInCents,
-                            timestamp = it.createdAt
-                    )
-                    transactions.add(transaction)
+                    val userId = users.first { user -> user.email == it.email }.id
+                    val merchantId = merchants.first { merchant -> merchant.name == it.merchant }.id
+
+                    if(userId != null) {
+                        val transaction: Transaction? = it.createdAt?.let { it1 ->
+                            it.amountInCents?.let { it2 ->
+                                Transaction(
+                                        merchantId = merchantId,
+                                        userId = userId,
+                                        amountInCents = it2,
+                                        timestamp = it1
+                                )
+                            }
+                        }
+                        transaction?.let {
+                            transactions.add(transaction)
+                        }
+                    }
                 }
             }
 
-            transactionRepo.insert(transactions)
+            transactionRepo.saveAll(transactions)
 
             logger.info("Transactions inserted: " + transactions.size)
-
         }
     }
 }
