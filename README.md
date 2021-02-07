@@ -86,6 +86,7 @@ Once complete, please attach @pseudosky as a git project collaborators.
 
 1. Start Application using maven runner `clean install spring-boot:run`
 2. Run /normalizeUsersAndMerchants to normalize data (found in postman collection below)
+3. Then you will have the data normalized and you can run any other endpoints you want
 
 
 # Postman Collection
