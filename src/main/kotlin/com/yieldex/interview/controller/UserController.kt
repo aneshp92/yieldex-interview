@@ -3,6 +3,8 @@ package com.yieldex.interview.controller
 import com.yieldex.interview.data.model.postgres.User
 import com.yieldex.interview.data.model.request.UserCreateRequest
 import com.yieldex.interview.data.model.request.UserUpdateRequest
+import com.yieldex.interview.data.model.response.FilteredTransactionResponse
+import com.yieldex.interview.service.TransactionService
 import com.yieldex.interview.service.UserService
 import com.yieldex.interview.validation.Validations
 import lombok.extern.slf4j.Slf4j
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*
 class UserController(
     @Autowired private val userService: UserService,
     @Autowired private val validations: Validations,
+    @Autowired private val transactionService: TransactionService
 ) {
 
     val logger: Logger = LoggerFactory.getLogger("UserController")
@@ -62,6 +65,52 @@ class UserController(
             ResponseEntity(userService.summarizeMerchants(id.toLong()), HttpStatus.OK)
         } catch (e: NumberFormatException) {
             ResponseEntity("Please provide valid userId to update", HttpStatus.BAD_REQUEST)
+        }
+    }
+
+    @GetMapping("/{userId}/transactions")
+    fun getTransactionsFiltered(@PathVariable @NotNull userId: String,
+                                @RequestParam start: Long?,
+                                @RequestParam end: Long?,
+                                @RequestParam merchantId: String?,
+                                @RequestParam pageSize: Int?,
+                                @RequestParam page: Int?
+    ): ResponseEntity<*> {
+        try {
+
+            val userIdLong: Long = userId.toLong()
+            if(start != null && end != null) {
+                if(start > end) return ResponseEntity("Please make sure start time is before end time", HttpStatus.BAD_REQUEST)
+
+                return if(pageSize == null) {
+                    val transactions: List<FilteredTransactionResponse> =
+                        transactionService.getAllTransactionsBetween(userIdLong, start, end)
+                    ResponseEntity(transactions, HttpStatus.OK)
+                } else {
+                    val transactions =
+                        transactionService.getPaginatedTransactionsBetween(userIdLong, start, end, pageSize, page ?: 1)
+                    ResponseEntity(transactions, HttpStatus.OK)
+                }
+            } else if(merchantId != null) {
+                try{
+                    val merchantIdLong: Long = merchantId.toLong()
+
+                    return if(pageSize == null) {
+                        val transactions: List<FilteredTransactionResponse> =
+                            transactionService.getAllTransactionsByMerchant(userIdLong, merchantIdLong)
+                        ResponseEntity(transactions, HttpStatus.OK)
+                    } else {
+                        val transactions =
+                            transactionService.getPaginatedTransactionsByMerchant(userIdLong, merchantIdLong, pageSize, page ?: 0)
+                        ResponseEntity(transactions, HttpStatus.OK)
+                    }
+                } catch (e: NumberFormatException) {
+                    ResponseEntity("Please provide valid userId and merchantId", HttpStatus.BAD_REQUEST)
+                }
+            }
+            return ResponseEntity("Please provide proper filters", HttpStatus.BAD_REQUEST)
+        } catch (e: NumberFormatException) {
+            return ResponseEntity("Please provide valid userId", HttpStatus.BAD_REQUEST)
         }
     }
 

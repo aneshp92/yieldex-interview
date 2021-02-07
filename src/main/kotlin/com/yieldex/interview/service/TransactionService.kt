@@ -4,6 +4,7 @@ import com.yieldex.interview.data.model.postgres.Master
 import com.yieldex.interview.data.model.postgres.Transaction
 import com.yieldex.interview.data.model.request.TransactionRequest
 import com.yieldex.interview.data.model.response.FilteredTransactionResponse
+import com.yieldex.interview.data.model.response.PaginatedFilteredTransactionResponse
 import com.yieldex.interview.data.model.response.TransactionResponse
 import com.yieldex.interview.data.repository.MasterRepository
 import com.yieldex.interview.data.repository.MerchantRepository
@@ -25,7 +26,7 @@ class TransactionService (
     @Autowired private val merchantRepo: MerchantRepository,
 ) {
 
-    fun getTransactionsBetween(userId: Long, start: Long, end: Long): List<FilteredTransactionResponse> {
+    fun getAllTransactionsBetween(userId: Long, start: Long, end: Long): List<FilteredTransactionResponse> {
         val email: String = userRepo.findById(userId)?.email
             ?: throw NotFoundException("User for userId: $userId does not have any transactions")
         val transactions: List<Master> = masterRepo.findByEmailAndCreatedAtBetween(email, start, end)
@@ -39,7 +40,7 @@ class TransactionService (
         return result
     }
 
-    fun getTransactionsByMerchant(userId: Long, merchantId: Long): List<FilteredTransactionResponse> {
+    fun getAllTransactionsByMerchant(userId: Long, merchantId: Long): List<FilteredTransactionResponse> {
         val email: String = userRepo.findById(userId)?.email
             ?: throw NotFoundException("User for userId: $userId does not have any transactions")
         val merchantName: String = merchantRepo.findById(merchantId).name
@@ -51,6 +52,62 @@ class TransactionService (
         }
 
         return result
+    }
+
+    fun getPaginatedTransactionsBetween(userId: Long, start: Long, end: Long, pageSize: Int, page: Int): PaginatedFilteredTransactionResponse {
+        val email: String = userRepo.findById(userId)?.email
+            ?: throw NotFoundException("User for userId: $userId does not have any transactions")
+        val transactions: List<Master> = masterRepo.findByEmailAndCreatedAtBetween(email, start, end)
+        val filteredTransactions = ArrayList<FilteredTransactionResponse>()
+
+        for (transaction in transactions) {
+            val merchantId: Long = merchantRepo.findByName(transaction.merchant).id
+            filteredTransactions.add(transaction.toFilteredTransactionResponse(userId, merchantId))
+        }
+
+        val numPages = if(filteredTransactions.count() % pageSize == 0)
+            filteredTransactions.count() / pageSize
+        else
+            filteredTransactions.count() / pageSize
+
+        val startIdx = (page - 1) * pageSize
+        val endIdx = page * pageSize
+
+        return PaginatedFilteredTransactionResponse(
+            filteredTransactions.subList(startIdx, endIdx),
+            pageSize,
+            page,
+            numPages,
+            filteredTransactions.count()
+        )
+    }
+
+    fun getPaginatedTransactionsByMerchant(userId: Long, merchantId: Long, pageSize: Int, page: Int): PaginatedFilteredTransactionResponse {
+        val email: String = userRepo.findById(userId)?.email
+            ?: throw NotFoundException("User for userId: $userId does not have any transactions")
+        val merchantName: String = merchantRepo.findById(merchantId).name
+        val transactions: List<Master> = masterRepo.findByEmailAndMerchant(email, merchantName)
+        val filteredTransactions = ArrayList<FilteredTransactionResponse>()
+
+        for (transaction in transactions) {
+            filteredTransactions.add(transaction.toFilteredTransactionResponse(userId, merchantId))
+        }
+
+        val numPages = if(filteredTransactions.count() % pageSize == 0)
+            filteredTransactions.count() / pageSize
+        else
+            filteredTransactions.count() / pageSize
+
+        val startIdx = (page - 1) * pageSize
+        val endIdx = page * pageSize
+
+        return PaginatedFilteredTransactionResponse(
+            filteredTransactions.subList(startIdx, endIdx),
+            pageSize,
+            page,
+            numPages,
+            filteredTransactions.count()
+        )
     }
 
     fun authorizeTransaction(transaction: TransactionRequest): TransactionResponse {

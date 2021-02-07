@@ -56,7 +56,7 @@ class TransactionServiceTest {
         val merchant = Merchant("", 0F, 0F, "", 1)
         Mockito.`when`(merchantRepo.findByName(ArgumentMatchers.anyString())).thenReturn(merchant)
 
-        val filteredTransactions: List<FilteredTransactionResponse> = transactionService.getTransactionsBetween(1, 0, 200)
+        val filteredTransactions: List<FilteredTransactionResponse> = transactionService.getAllTransactionsBetween(1, 0, 200)
         assertEquals(2, filteredTransactions.size)
         assertEquals(12, filteredTransactions[0].timestamp)
         assertEquals(123, filteredTransactions[1].timestamp)
@@ -75,7 +75,7 @@ class TransactionServiceTest {
         val merchant = Merchant("", 0F, 0F, "", 1)
         Mockito.`when`(merchantRepo.findByName(ArgumentMatchers.anyString())).thenReturn(merchant)
 
-        val filteredTransactions: List<FilteredTransactionResponse> = transactionService.getTransactionsBetween(1, 0, 100)
+        val filteredTransactions: List<FilteredTransactionResponse> = transactionService.getAllTransactionsBetween(1, 0, 100)
         assertEquals(1, filteredTransactions.size)
         assertEquals(12, filteredTransactions[0].timestamp)
 
@@ -94,7 +94,7 @@ class TransactionServiceTest {
         transactions.add(Master("", "", "", "", "", 0F, 0F, "merchant",  9, 123))
         Mockito.`when`(masterRepo.findByEmailAndMerchant(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenReturn(transactions)
 
-        val filteredTransactions: List<FilteredTransactionResponse> = transactionService.getTransactionsByMerchant(1, 1)
+        val filteredTransactions: List<FilteredTransactionResponse> = transactionService.getAllTransactionsByMerchant(1, 1)
         assertEquals(2, filteredTransactions.size)
         assertEquals("merchant", filteredTransactions[0].merchantName)
         assertEquals("merchant", filteredTransactions[1].merchantName)

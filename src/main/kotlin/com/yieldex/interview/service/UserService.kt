@@ -11,6 +11,7 @@ import com.yieldex.interview.data.repository.MerchantRepository
 import com.yieldex.interview.data.repository.UserRepository
 import com.yieldex.interview.exceptions.AlreadyExistsException
 import com.yieldex.interview.exceptions.NotFoundException
+import com.yieldex.interview.extensions.StringExtensions.Companion.encrypt
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.stream.Collectors
@@ -41,7 +42,7 @@ class UserService(
                 email = userToCreate.email,
                 lastName = userToCreate.lastName,
                 firstName = userToCreate.firstName,
-                password = userToCreate.password,
+                password = userToCreate.password.encrypt(),
                 id = -1
         )
         userRepo.save(userCreated)

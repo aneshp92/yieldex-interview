@@ -12,6 +12,7 @@ import com.yieldex.interview.data.repository.MerchantRepository
 import com.yieldex.interview.data.repository.UserRepository
 import com.yieldex.interview.exceptions.AlreadyExistsException
 import com.yieldex.interview.exceptions.NotFoundException
+import lombok.extern.slf4j.Slf4j
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -26,6 +27,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
+@Slf4j
 class UserServiceTest {
 
     @Mock
@@ -75,7 +77,7 @@ class UserServiceTest {
         assertEquals("first", userCreated.firstName)
         assertEquals("last", userCreated.lastName)
         assertEquals("email", userCreated.email)
-        assertEquals("pass", userCreated.password)
+        assertEquals("O0RdbWHLsUg=", userCreated.password)
         assertEquals(123, userCreated.id)
     }
 

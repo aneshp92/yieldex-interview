@@ -1,43 +1,49 @@
 package com.yieldex.interview.extensions
 
-import org.springframework.util.Base64Utils
+import sun.misc.BASE64Decoder
+import sun.misc.BASE64Encoder
 import javax.crypto.Cipher
-import javax.crypto.spec.IvParameterSpec
-import javax.crypto.spec.SecretKeySpec
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.DESKeySpec
+
+
+
+
+
+
+
+
+
 
 class StringExtensions {
 
     companion object {
         fun String.encrypt(): String {
-            val secretKeySpec = SecretKeySpec(this.toByteArray(), "AES")
-            val iv = ByteArray(16)
-            val charArray = this.toCharArray()
-            for (i in charArray.indices){
-                iv[i] = charArray[i].toByte()
-            }
-            val ivParameterSpec = IvParameterSpec(iv)
+            val keySpec = DESKeySpec("Your secret Key phrase".toByteArray(charset("UTF8")))
+            val keyFactory = SecretKeyFactory.getInstance("DES")
+            val key = keyFactory.generateSecret(keySpec)
+            val base64encoder = BASE64Encoder()
 
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec)
+            val cleartext: ByteArray = this.toByteArray()
 
-            val encryptedValue = cipher.doFinal(this.toByteArray())
-            return Base64Utils.encodeToString(encryptedValue)
+            val cipher = Cipher.getInstance("DES") // cipher is not thread safe
+
+            cipher.init(Cipher.ENCRYPT_MODE, key)
+            return base64encoder.encode(cipher.doFinal(cleartext))
         }
 
         fun String.decrypt(): String {
-            val secretKeySpec = SecretKeySpec(this.toByteArray(), "AES")
-            val iv = ByteArray(16)
-            val charArray = this.toCharArray()
-            for (i in charArray.indices){
-                iv[i] = charArray[i].toByte()
-            }
-            val ivParameterSpec = IvParameterSpec(iv)
+            val keySpec = DESKeySpec("Your secret Key phrase".toByteArray(charset("UTF8")))
+            val keyFactory = SecretKeyFactory.getInstance("DES")
+            val key = keyFactory.generateSecret(keySpec)
+            val base64decoder = BASE64Decoder()
 
-            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec)
+            val encrypedPwdBytes: ByteArray = base64decoder.decodeBuffer(this)
 
-            val decryptedByteValue = cipher.doFinal(Base64Utils.decode(this.toByteArray()))
-            return String(decryptedByteValue)
+            val cipher = Cipher.getInstance("DES") // cipher is not thread safe
+
+            cipher.init(Cipher.DECRYPT_MODE, key)
+            return cipher.doFinal(encrypedPwdBytes).toString()
         }
     }
 
