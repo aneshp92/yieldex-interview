@@ -101,7 +101,7 @@ class UserController(
                         ResponseEntity(transactions, HttpStatus.OK)
                     } else {
                         val transactions =
-                            transactionService.getPaginatedTransactionsByMerchant(userIdLong, merchantIdLong, pageSize, page ?: 0)
+                            transactionService.getPaginatedTransactionsByMerchant(userIdLong, merchantIdLong, pageSize, page ?: 1)
                         ResponseEntity(transactions, HttpStatus.OK)
                     }
                 } catch (e: NumberFormatException) {
