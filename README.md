@@ -82,11 +82,11 @@ The maximum score for the assignment is 150 points. 90 points is the passing gra
 Once complete, please attach @pseudosky as a git project collaborators.
 
 
-#Running the Application
+# Running the application
 
 1. Start Application using maven runner `clean install spring-boot:run`
 2. Run /normalizeUsersAndMerchants to normalize data (found in postman collection below)
 
 
-#Postman Collection:
+# Postman Collection
 https://www.getpostman.com/collections/59aaeac2b41ff9b16bf9
