@@ -56,11 +56,6 @@ class UserServiceTest {
 
     @Test
     fun test_getUserBalance_withUserNotFound() {
-        val transactions = ArrayList<Master>()
-        transactions.add(Master("", "", "", "", "", 0F, 0F, "",  11, 123))
-        transactions.add(Master("", "", "", "", "", 0F, 0F, "",  9, 123))
-
-        val user: User = User("first", "last", "test@test.com", "pass", 0)
         Mockito.`when`(userRepo.findById(ArgumentMatchers.anyLong())).thenThrow(NotFoundException("User for userId: 0 does not have any transactions"))
 
         val exception = assertThrows<NotFoundException> {

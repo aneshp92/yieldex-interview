@@ -2,6 +2,7 @@ package com.yieldex.interview.data.model.response
 
 data class FilteredTransactionResponse(
     val status: String,
+    val merchantName: String,
     val userId: Long,
     val merchantId: Long,
     val amountInCents: Int,

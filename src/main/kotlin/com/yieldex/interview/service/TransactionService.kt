@@ -55,8 +55,8 @@ class TransactionService (
 
     fun authorizeTransaction(transaction: TransactionRequest): TransactionResponse {
         val userBalance: Int = userService.getUserBalance(transaction.userId).balance
-        val status: String = if(transaction.amountInCents < userBalance) "DECLINED" else "APPROVED"
-        val endingBalance: Int = userBalance - transaction.amountInCents
+        val status: String = if(transaction.amountInCents <= userBalance) "APPROVED" else "DECLINED"
+        val endingBalance: Int = if("APPROVED" == status) userBalance - transaction.amountInCents else userBalance
 
         transactionRepo.save(Transaction(
             merchantId = transaction.merchantId,
