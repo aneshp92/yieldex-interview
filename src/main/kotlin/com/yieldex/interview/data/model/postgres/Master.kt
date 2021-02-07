@@ -20,5 +20,6 @@ class Master(
         @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
         val id: Long? = -1
 ) {
-    private constructor() : this("", "", "", "", "", 0F, 0F, "", 0, 0L)
+        private constructor() : this("", "", "", "", "", 0F, 0F, "", 0, 0L)
 }
+

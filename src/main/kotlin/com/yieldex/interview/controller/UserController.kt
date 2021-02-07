@@ -1,8 +1,10 @@
 package com.yieldex.interview.controller
 
 import com.yieldex.interview.data.model.postgres.User
-import com.yieldex.interview.data.model.request.UserRequest
+import com.yieldex.interview.data.model.request.UserCreateRequest
+import com.yieldex.interview.data.model.request.UserUpdateRequest
 import com.yieldex.interview.service.UserService
+import com.yieldex.interview.validation.Validations
 import lombok.extern.slf4j.Slf4j
 import org.jetbrains.annotations.NotNull
 import org.slf4j.Logger
@@ -16,7 +18,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/user")
 @Slf4j
 class UserController(
-        @Autowired private val userService: UserService,
+    @Autowired private val userService: UserService,
+    @Autowired private val validations: Validations,
 ) {
 
     val logger: Logger = LoggerFactory.getLogger("UserController")
@@ -33,8 +36,8 @@ class UserController(
 
     @PostMapping("/")
     @ResponseBody
-    fun createUser(@RequestBody @NotNull userToCreate: User): ResponseEntity<*> {
-        return if(userToCreate != null) {
+    fun createUser(@RequestBody @NotNull userToCreate: UserCreateRequest): ResponseEntity<*> {
+        return if(validations.validUserToCreate(userToCreate)) {
             val userCreated: User = userService.createUser(userToCreate);
             ResponseEntity(userCreated, HttpStatus.OK)
         } else {
@@ -44,13 +47,22 @@ class UserController(
 
     @PatchMapping("/{id}")
     @ResponseBody
-    fun updateUser(@PathVariable @NotNull id: String, @RequestBody @NotNull userToUpdate: UserRequest): ResponseEntity<*> {
+    fun updateUser(@PathVariable @NotNull id: String, @RequestBody @NotNull userUpdateToUpdate: UserUpdateRequest): ResponseEntity<*> {
         return try {
-            ResponseEntity(userService.updateUser(id.toLong(), userToUpdate), HttpStatus.OK)
+            ResponseEntity(userService.updateUser(id.toLong(), userUpdateToUpdate), HttpStatus.OK)
         } catch (e: NumberFormatException) {
             ResponseEntity("Please provide valid userId to update", HttpStatus.BAD_REQUEST)
         }
     }
 
+    @GetMapping("/{id}/merchantSummary")
+    @ResponseBody
+    fun userMerchantSummary(@PathVariable @NotNull id: String): ResponseEntity<*> {
+        return try {
+            ResponseEntity(userService.summarizeMerchants(id.toLong()), HttpStatus.OK)
+        } catch (e: NumberFormatException) {
+            ResponseEntity("Please provide valid userId to update", HttpStatus.BAD_REQUEST)
+        }
+    }
 
 }

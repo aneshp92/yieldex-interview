@@ -14,5 +14,5 @@ class User(
         @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="my_seq")
         var id: Long
 ) {
-        private constructor() : this("", "", "", "", 0)
+        private constructor() : this("", "", "", "", -1)
 }

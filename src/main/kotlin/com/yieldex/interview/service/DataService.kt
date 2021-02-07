@@ -36,7 +36,7 @@ class DataService{
 
             it.forEach {
                 if(!users.any{ user -> user.email == it.email }) {
-                    val user: User = User(
+                    val user = User(
                             firstName = it.firstName,
                             lastName = it.lastName,
                             email = it.email,
@@ -80,21 +80,13 @@ class DataService{
                     val userId = users.first { user -> user.email == it.email }.id
                     val merchantId = merchants.first { merchant -> merchant.name == it.merchant }.id
 
-                    if(userId != null) {
-                        val transaction: Transaction? = it.createdAt?.let { it1 ->
-                            it.amountInCents?.let { it2 ->
-                                Transaction(
-                                        merchantId = merchantId,
-                                        userId = userId,
-                                        amountInCents = it2,
-                                        timestamp = it1
-                                )
-                            }
-                        }
-                        transaction?.let {
-                            transactions.add(transaction)
-                        }
-                    }
+                    transactions.add(Transaction(
+                        userId = userId,
+                        merchantId = merchantId,
+                        amountInCents = it.amountInCents,
+                        timestamp = it.createdAt,
+                        status = "APPROVED",
+                    ))
                 }
             }
 

@@ -1,6 +1,6 @@
 package com.yieldex.interview.data.model.request
 
-data class UserRequest(
+data class UserUpdateRequest(
         var firstName: String?,
         var lastName: String?,
         var email: String?,

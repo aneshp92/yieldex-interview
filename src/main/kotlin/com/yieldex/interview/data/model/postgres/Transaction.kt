@@ -9,8 +9,9 @@ class Transaction(
         val merchantId: Long,
         val amountInCents: Int,
         val timestamp: Long,
+        val status: String,
         @Id @GeneratedValue(strategy = GenerationType.AUTO)
         val id: Long = -1
 ) {
-    private constructor() : this(0L, 0L, 0, 0L)
+    constructor() : this(0L, 0L, 0, 0L, "")
 }

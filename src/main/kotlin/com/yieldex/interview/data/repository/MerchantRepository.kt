@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface MerchantRepository: CrudRepository<Merchant, String> {
+    fun findByName(name: String): Merchant
+    fun findById(id: Long): Merchant
 }
